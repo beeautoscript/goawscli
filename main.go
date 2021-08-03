@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"goawscli/instances"
+	"goawscli/s3"
 	"log"
 	"os"
 
@@ -47,6 +48,20 @@ func main() {
 			Name:     "csv",
 			Value:    "example.xlsx",
 			Usage:    "name of csv file to be saved.",
+			Required: true,
+		},
+		&cli.StringFlag{
+			Name:     "region",
+			Value:    "us-east-1",
+			Usage:    "aws region name",
+			Required: true,
+		},
+	}
+	// S3 Flags
+	bucket_name_flag := []cli.Flag{
+		&cli.StringFlag{
+			Name:     "name",
+			Usage:    "new bucket name",
 			Required: true,
 		},
 		&cli.StringFlag{
@@ -119,6 +134,42 @@ func main() {
 					Action: func(c *cli.Context) error {
 						ec2_csv_report := instances.GenerateCsvReportInstances(c.String("csv"), c.String("region"))
 						fmt.Println(ec2_csv_report)
+						return nil
+					},
+				},
+			},
+		},
+		{
+			Name:  "s3",
+			Usage: "Manage S3",
+			Subcommands: []*cli.Command{
+				{
+					Name:  "new",
+					Usage: "Create new bucket",
+					Flags: bucket_name_flag,
+					Action: func(c *cli.Context) error {
+						s3_bucket_create := s3.CreateS3Bucket(c.String("name"), c.String("region"))
+						fmt.Println(s3_bucket_create)
+						return nil
+					},
+				},
+				{
+					Name:  "delete",
+					Usage: "Delete bucket",
+					Flags: bucket_name_flag,
+					Action: func(c *cli.Context) error {
+						s3_bucket_delete := s3.DeleteS3Bucket(c.String("name"), c.String("region"))
+						fmt.Println(s3_bucket_delete)
+						return nil
+					},
+				},
+				{
+					Name:  "list",
+					Usage: "List buckets",
+					Flags: regionFlag,
+					Action: func(c *cli.Context) error {
+						s3_bucket_list := s3.ListS3Bucket(c.String("region"))
+						fmt.Println(s3_bucket_list)
 						return nil
 					},
 				},
